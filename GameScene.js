@@ -71,13 +71,13 @@ class GameScene extends Phaser.Scene {
             
             // Y axis Movement
             if (!this.space.isDown) this.jumpAble = true
-            if (this.space.getDuration() >= 1200 && this.jumpAble) {
-                this.player.setVelocity(this.jumpDir(),-playerSpeed * 5)
+            if (this.jumpAble) {
+                if (this.space.getDuration() >= 1200) {
+                   this.player.setVelocity(this.jumpDir(),-playerSpeed * 5)
                     this.space.duration = 0
-                    this.jumpAble = false
-            }
-            
-            switch (true) {
+                    this.jumpAble = false 
+                }
+                switch (true) {
                 case (this.dur / 240) == 0 :
                     break
                 case (this.dur / 240) < 1 :
@@ -101,6 +101,11 @@ class GameScene extends Phaser.Scene {
                     this.jumpAble = false
                     break
             }
+
+                
+            }
+            
+            
         } 
     }
 
