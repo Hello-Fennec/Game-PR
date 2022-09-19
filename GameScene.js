@@ -9,8 +9,9 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
-        this.add.text(20, 20, "TEST")
-        this.jumpdebug = this.add.text(20,40)
+        
+        this.cam = this.cameras.main;
+
 
         // Player
         this.player = this.physics.add.sprite(this.game.config.width / 2, this.game.config.height / 2, "Player").setOrigin(0.5, 0.5)
@@ -24,10 +25,14 @@ class GameScene extends Phaser.Scene {
         this.platform = this.physics.add.staticGroup().setOrigin(0.5,0.5)
         this.platform.create(640, 700,"Platform")
         this.platform.create(0, 500,"Platform")
+        this.platform.create(1280, 200, "Platform")
+
         this.platArr = []
 
+    
+
         for (let i in this.platform.getChildren()) {
-            this.platArr[i] = this.platform.getChildren()[i].body.top
+            this.platArr[i] = this.platform.getChildren()[i].body.top 
         }
 
         this.jumpAble = true
@@ -45,68 +50,47 @@ class GameScene extends Phaser.Scene {
         this.enter = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
 
 
-    }
+    }   
 
     update() {
         this.movement()
+        
+        if (Phaser.Input.Keyboard.JustDown(this.enter)) {
+            this.events.emit('Talk')
+        }
     }
 
     movement() {
-        // X axis Movement
-        if (this.Grounded()){
-            this.dur = this.space.duration
+        if (this.Grounded() && this.player.body.velocity.y == 0 ){
             if (!this.space.isDown) {
-               if (this.left.isDown) { 
-                    this.player.setFlipX(true)
+                if (this.left.isDown) {
                     this.player.setVelocityX(-playerSpeed)
-                } else if (this.right.isDown) {
-                    this.player.setFlipX(false)
+                }
+                else if (this.right.isDown){
                     this.player.setVelocityX(playerSpeed)
                 } else {
                     this.player.setVelocityX(0)
-                } 
+                }
             } else {
                 this.player.setVelocityX(0)
             }
-            
-            // Y axis Movement
-            if (!this.space.isDown) this.jumpAble = true
-            if (this.jumpAble) {
-                if (this.space.getDuration() >= 1200) {
-                   this.player.setVelocity(this.jumpDir(),-playerSpeed * 5)
+
+            if (this.space.isDown && this.jumpAble) {
+                if (this.space.getDuration() > 1200) {
+                    this.player.setVelocity(this.jumpDir() , -playerSpeed * 5)
                     this.space.duration = 0
-                    this.jumpAble = false 
+                    this.jumpAble = false
                 }
-                switch (true) {
-                case (this.dur / 240) == 0 :
-                    break
-                case (this.dur / 240) < 1 :
-                    this.player.setVelocity(this.jumpDir(),-playerSpeed)
-                    this.space.duration = 0
-                    this.jumpAble = false
-                    break
-                case (this.dur / 240) < 2 :
-                    this.player.setVelocity(this.jumpDir(),-playerSpeed * 2)
-                    this.space.duration = 0
-                    this.jumpAble = false
-                    break
-                case (this.dur / 240) < 3 :
-                    this.player.setVelocity(this.jumpDir(),-playerSpeed * 3)
-                    this.space.duration = 0
-                    this.jumpAble = false
-                    break
-                case (this.dur / 240) < 4 :
-                    this.player.setVelocity(this.jumpDir(),-playerSpeed * 4)
-                    this.space.duration = 0
-                    this.jumpAble = false
-                    break
+            } else if (Phaser.Input.Keyboard.JustUp(this.space) && this.jumpAble) {
+                this.player.setVelocity(this.jumpDir() , -playerSpeed * this.space.duration/240)
+                this.space.duration = 0
+                this.jumpAble = false
+
+            } else if (this.space.isUp){
+                this.jumpAble = true
             }
 
-                
-            }
-            
-            
-        } 
+        }
     }
 
 
@@ -118,4 +102,10 @@ class GameScene extends Phaser.Scene {
         return !this.left.isDown ? this.right.isDown ? playerSpeed : 0 : -playerSpeed 
     }
 
+
+    
+
+    
+
 }
+
