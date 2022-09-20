@@ -3,21 +3,26 @@ class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: "GameScene" });
     }
+
+    
     preload() {
+        this.loaded = false
         this.load.spritesheet('Player', './sprite/Player.png', {
             frameWidth: 4096 / 2, frameHeight: 2048
         })
-        this.load.image("Platform", "./sprite/Platform.png")
+        this.load.image("Platform", "./sprite/Platform.png") 
+        
     }
 
     create() {
+        
         //bg
         this.add.image(0, -720 * 2, 'lv2').setOrigin(0, 0)
         this.add.image(0, -720, 'lv3').setOrigin(0, 0)
         this.add.image(0, 0, 'lv2').setOrigin(0, 0)
 
         // Player
-        this.player = this.physics.add.sprite(this.game.config.width / 2, this.game.config.height / 2, "Player")
+        this.player = this.physics.add.sprite(280, 400, "Player")
         .setScale(0.05)
         .setSize(1350, 1320)
         .setOffset(400,200)
@@ -65,10 +70,10 @@ class GameScene extends Phaser.Scene {
         this.scene1 = this.add.zone(0, 0).setSize(this.game.config.width, this.game.config.height).setOrigin(0.5, 0.5)
         this.physics.world.enable(this.scene1)
         this.scene1.body.setAllowGravity(false)
-
+    
         this.physics.add.overlap(this.player,this.scene1, () => {
             this.cameras.main.pan(this.scene1.x, this.scene1.y, 0, 'Power2')
-            // console.log("Test")
+        
         })
         // this.cameras.main.startFollow(this.player);
         
@@ -110,17 +115,24 @@ class GameScene extends Phaser.Scene {
         this.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
         this.enter = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
 
+        this.dim = this.add.rectangle(0,0, this.game.config.width , this.game.config.height , 0x000000 )
+        .setOrigin(0,0)
+        .setAlpha(1)
 
+        this.load.once('complete' , this.sceneStart, this)
+        this.load.start()
     }
 
     update() {
-        this.movement()
-
-
-        // this.cameras.main.startFollow(this.player)
+        if (this.loaded){
+            this.movement()
         
-        if (Phaser.Input.Keyboard.JustDown(this.enter)) {
-            this.events.emit('Talk')
+
+            
+            
+            if (Phaser.Input.Keyboard.JustDown(this.enter)) {
+                this.events.emit('Talk')
+            }
         }
     }
 
@@ -173,7 +185,33 @@ class GameScene extends Phaser.Scene {
 
 
     
-
+    sceneStart() {
+        this.cameras.main.startFollow(this.player)
+        this.cameras.main.zoomTo(2.5 ,0)
+        this.player.anims.play('playerAni', true);
+        this.scene1.active = false
+        this.tweens.add({
+            delay: 700,
+            targets: this.dim,
+            alpha: 0,
+            duration: 1500
+        })
+        this.tweens.add({
+            delay: 800,
+            targets: this.player,
+            x: this.player.x + 300,
+            duration: 2000
+        })
+        setTimeout(() => {
+            this.cameras.main.stopFollow(this.player)
+            this.cameras.main.pan(this.scene1.x, this.scene1.y, 500, 'Power2')
+            this.cameras.main.zoomTo(1,500)
+            this.player.anims.play('playerAni', false)
+            this.scene1.active = true
+            this.loaded = true
+        },2500)
+        
+    }
     
 
 }

@@ -20,9 +20,8 @@ class menu extends Phaser.Scene {
         .setAlpha(0)
 
 
-        this.music = this.sound.add("menu_theme").play({loop: true})
-        console.log()
-        
+        this.music = this.sound.add("menu_theme").play({loop: true , volume: 0.5})
+            
         this.pointer = this.add.zone(0, 0).setSize(this.game.config.width, this.game.config.height).setOrigin(0, 0)
         this.physics.world.enable(this.pointer)
         this.pointer.body.setAllowGravity(false)
