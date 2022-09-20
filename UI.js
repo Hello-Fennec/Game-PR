@@ -1,10 +1,12 @@
 class UI extends Phaser.Scene {
     constructor() {
-        super({key: UI})
-        Phaser.Scene.call(this, { key: 'UI', active: true });
+        super({key: "UI"})
+        // Phaser.Scene.call(this, { key: 'UI', active: true });
     }
     create() {
-        this.add.text(20,20, "This text is in UI scene")
+
+        this.add.text(20,20,"TEST")
+        
 
         this.dialogSet = [
             "Only the worthy one can get that water. Do you thing you're worth enought?",
@@ -43,30 +45,25 @@ class UI extends Phaser.Scene {
     }
 
     textAnimate(text) {
-        if (this.TalkAble) {
-            console.log(this.testBox.x)
-            this.TalkAble = false
-            this.dialog.setText(text).setOrigin(0.5,0.5).setOrigin(0,0).setPosition(20,this.game.config.height - 120).setAlpha(0).setFontSize(25).setFontStyle("Bold")
+        this.dialog.setText(text).setOrigin(0.5,0.5).setOrigin(0,0).setPosition(20,this.game.config.height - 120).setAlpha(0).setFontSize(25).setFontStyle("Bold")
+        this.tweens.add({
+            targets: this.dialog,
+            y: this.dialog.y - 5,
+            alpha: 1,
+            duration: 300
+        },this)
+
+
+        setTimeout(() => {
             this.tweens.add({
                 targets: this.dialog,
-                y: this.dialog.y - 5,
-                alpha: 1,
+                y: this.dialog.y + 5,
+                alpha: 0,
                 duration: 300
             },this)
-
-
             setTimeout(() => {
-                this.tweens.add({
-                    targets: this.dialog,
-                    y: this.dialog.y + 5,
-                    alpha: 0,
-                    duration: 300
-                },this)
-                setTimeout(() => {
-                    this.TalkAble = true
-                } , 300)
-            } , 3000)
-        }
-        
+                this.TalkAble = true
+            } , 300)
+        } , 3000)
     }
 }
