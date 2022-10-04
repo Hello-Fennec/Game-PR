@@ -1,18 +1,20 @@
 var playerSpeed = 170;
+var mute = false;
 
 var config = {
-    type: Phaser.AUTO,
+    type: Phaser.CANVAS,
     width: 1280,
     height: 720,
-    backgroundColor: 0x33D8D8,
+    backgroundColor: 0x000000,
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 700 },
+            gravity: { y: 1800 },
             debug : true
         }
     },
-    scene: [menu ,GameScene ,Scene1, UI]
+    canvas: document.getElementById('game'),
+    scene: [menu,GameScene ,Scene1, UI]
 };
 
 var game = new Phaser.Game(config);

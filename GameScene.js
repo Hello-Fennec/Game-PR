@@ -8,14 +8,22 @@ class GameScene extends Phaser.Scene {
     preload() {
         this.loaded = false
         this.load.spritesheet('Player', './sprite/Player.png', {
-            frameWidth: 4096 / 2, frameHeight: 2048
+            frameWidth: 270 / 3, frameHeight: 90
+        })
+        this.load.spritesheet('Jump', './sprite/Jump.png', {
+            frameWidth: 900 / 10, frameHeight: 90
         })
         this.load.image("Platform", "./sprite/Platform.png") 
         
     }
 
     create() {
-        
+        // Keyboard Input
+        this.left = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A)
+        this.right = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D)
+        this.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
+        this.enter = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
+        this.w = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W)
         //bg
         this.add.image(0, -720 * 2, 'lv2').setOrigin(0, 0)
         this.add.image(0, -720, 'lv3').setOrigin(0, 0)
@@ -23,9 +31,8 @@ class GameScene extends Phaser.Scene {
 
         // Player
         this.player = this.physics.add.sprite(280, 400, "Player")
-        .setScale(0.05)
-        .setSize(1350, 1320)
-        .setOffset(400,200)
+        .setSize(50, 70)
+        .setOffset(20, 21)
         // .setSize(1100,1400)
 
         this.player.setBounce(0.9,0)
@@ -34,9 +41,29 @@ class GameScene extends Phaser.Scene {
             key: 'playerAni',
             frames: this.anims.generateFrameNumbers('Player', {
                 start: 0,
-                end: 1
+                end: 2
             }),
             duration: 500,    
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'startJumpAni',
+            frames: this.anims.generateFrameNumbers('Jump', {
+                start: 0,
+                end: 0
+            }),
+            duration: 1300,    
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'jumpAni',
+            frames: this.anims.generateFrameNumbers('Jump', {
+                start: 1,
+                end: 8
+            }),
+            duration: 1100,    
             repeat: -1
         })
         //this.player.setCollideWorldBounds(true)
@@ -67,13 +94,12 @@ class GameScene extends Phaser.Scene {
             this.cameras.main.pan(this.scene2.x, this.scene2.y, 0, 'Power2')
         })
 
-        this.scene1 = this.add.zone(0, 0).setSize(this.game.config.width, this.game.config.height).setOrigin(0.5, 0.5)
+        this.scene1o = this.scene1 = this.add.zone(0, 0).setSize(this.game.config.width, this.game.config.height).setOrigin(0.5, 0.5)
         this.physics.world.enable(this.scene1)
         this.scene1.body.setAllowGravity(false)
     
         this.physics.add.overlap(this.player,this.scene1, () => {
             this.cameras.main.pan(this.scene1.x, this.scene1.y, 0, 'Power2')
-        
         })
         // this.cameras.main.startFollow(this.player);
         
@@ -91,10 +117,17 @@ class GameScene extends Phaser.Scene {
         }
 
         this.jumpAble = true
+        // climb
+        
 
         // Collinder
         this.cX = 0;
         this.physics.add.collider(this.player,this.platform)
+
+        // Ladder
+        
+        
+
         // set zone scenes 
 
         this.scene1.x = (this.game.config.width / 2);
@@ -109,11 +142,7 @@ class GameScene extends Phaser.Scene {
         this.scene4.x = (this.game.config.width / 2);
         this.scene4.y = -(this.game.config.height / 2) * 5;
 
-        // Keyboard Input
-        this.left = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A)
-        this.right = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D)
-        this.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
-        this.enter = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
+        
 
         this.dim = this.add.rectangle(0,0, this.game.config.width , this.game.config.height , 0x000000 )
         .setOrigin(0,0)
@@ -126,9 +155,6 @@ class GameScene extends Phaser.Scene {
     update() {
         if (this.loaded){
             this.movement()
-        
-
-            
             
             if (Phaser.Input.Keyboard.JustDown(this.enter)) {
                 this.events.emit('Talk')
@@ -138,7 +164,7 @@ class GameScene extends Phaser.Scene {
 
     movement() {
         if (this.Grounded() && this.player.body.velocity.y == 0 ){
-            if (!this.space.isDown) {
+            if (!this.space.isDown && !this.w.isDown) {
                 if (this.left.isDown) {
                     this.player.setFlipX(true)
                     this.player.anims.play('playerAni', true);
@@ -152,18 +178,21 @@ class GameScene extends Phaser.Scene {
                     this.player.anims.play('playerAni', false);
                     this.player.setVelocityX(0)
                 }
-            } else {
+            } else if (this.space.isDown) {
                 this.player.anims.play('playerAni', false);
                 this.player.setVelocityX(0)
-            }
+            } 
 
             if (this.space.isDown && this.jumpAble) {
+                this.player.anims.play('startJumpAni', true);
                 if (this.space.getDuration() > 1200) {
-                    this.player.setVelocity(this.jumpDir() , -playerSpeed * 10)
+                    this.player.anims.play('jumpAni', true);
+                    this.player.setVelocity(this.jumpDir() , -playerSpeed * 5)
                     this.space.duration = 0
                     this.jumpAble = false
                 }
             } else if (Phaser.Input.Keyboard.JustUp(this.space) && this.jumpAble) {
+                this.player.anims.play('jumpAni', true);
                 this.player.setVelocity(this.jumpDir() , -playerSpeed * this.space.duration/240)
                 this.space.duration = 0
                 this.jumpAble = false
@@ -171,6 +200,7 @@ class GameScene extends Phaser.Scene {
             } else if (this.space.isUp){
                 this.jumpAble = true
             }
+
         }
     }
 
@@ -186,10 +216,13 @@ class GameScene extends Phaser.Scene {
 
     
     sceneStart() {
+        
+
         this.cameras.main.startFollow(this.player)
         this.cameras.main.zoomTo(2.5 ,0)
         this.player.anims.play('playerAni', true);
-        this.scene1.active = false
+
+        this.scene1o.active = false
         this.tweens.add({
             delay: 700,
             targets: this.dim,
@@ -207,7 +240,7 @@ class GameScene extends Phaser.Scene {
             this.cameras.main.pan(this.scene1.x, this.scene1.y, 500, 'Power2')
             this.cameras.main.zoomTo(1,500)
             this.player.anims.play('playerAni', false)
-            this.scene1.active = true
+            this.scene1o.active = true
             this.loaded = true
         },2500)
         
